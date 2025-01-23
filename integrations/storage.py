@@ -39,7 +39,8 @@ class StorageFile(AbstractFile):
                 port=self._port,
                 username=self._user,
                 client_keys=[self._key],
-                passphrase=self._key_passphrase
+                passphrase=self._key_passphrase,
+                known_hosts=None
         ) as conn:
             # Create folder for file if not exist
             await conn.run(f'mkdir -p {os.path.dirname(self.storage_path)}')
@@ -74,6 +75,8 @@ class StorageFile(AbstractFile):
                 port=self._port,
                 username=self._user,
                 client_keys=[self._key],
+                known_hosts=None,
+                passphrase=self._key_passphrase
         ) as conn:
             # Start SFTP session
             async with conn.start_sftp_client() as sftp:
@@ -105,6 +108,8 @@ class StorageFile(AbstractFile):
                 port=self._port,
                 username=self._user,
                 client_keys=[self._key],
+                known_hosts=None,
+                passphrase=self._key_passphrase
         ) as conn:
             # Start SFTP session
             async with conn.start_sftp_client() as sftp:
