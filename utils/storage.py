@@ -14,6 +14,8 @@ async def delete_old_dumps(age: int = 30):
     storage = Storage()
     file_paths = await storage.all_dumps()
 
+    logger.info('On storage server %d dumps.', len(file_paths))
+
     for file_path in file_paths:
         # Math created at date
         date = os.path.split(file_path)[-1].replace('.dump', '')
