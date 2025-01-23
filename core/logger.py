@@ -42,7 +42,7 @@ def setting_logger(logger: Logger, logs_path: str) -> Logger:
     return logger
 
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 # Create loggers
 logger = setting_logger(

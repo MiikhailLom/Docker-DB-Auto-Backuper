@@ -1,0 +1,40 @@
+import os
+import sys
+
+from core.logger import logger
+from integrations.docker import Docker
+from integrations.ipconfig import get_my_ip
+from integrations.file import StorageFile
+
+
+async def restore(project: str, dump: str) -> None:
+    """
+        Start backup of dbs
+    :param project: The name of the project
+    :param dump: The name of the dump file to restore
+    :return:
+    """
+    # Get ip address of your server
+    my_ip = await get_my_ip()
+
+    # Download dump file to local
+    dump_path = f'data/buffer/{dump}'
+    file = StorageFile(
+        storage_path=f'/root/storage/{my_ip}/{project}/{dump}',
+        local_path=dump_path
+    )
+    success = await file.download()
+
+    if not success:
+        logger.error("Failed to download dump file from storage")
+        sys.exit(1)
+
+    # Get Containers with dbs
+    docker = Docker()
+    await docker.restore_db(
+        project_name=project,
+        dump_path=dump_path
+    )
+
+    os.remove(dump_path)
+    sys.exit(0)

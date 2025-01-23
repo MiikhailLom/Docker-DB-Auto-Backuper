@@ -21,3 +21,11 @@ class AbstractFile(ABC):
     @abstractmethod
     def delete(self, *args, **kwargs):
         pass
+
+
+class AbstractStorage(ABC):
+    _host: str
+    _key: str
+    _key_passphrase: str
+    _port: int
+    _user: str

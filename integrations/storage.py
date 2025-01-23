@@ -3,35 +3,22 @@ import logging
 import os
 
 import asyncssh
-from asyncssh import SSHClientConnection
 
-from integrations.base import AbstractFile
+from integrations.base import AbstractFile, AbstractStorage
 from settings import settings
 
 
-class StorageFile(AbstractFile):
+class Storage(AbstractStorage):
     _host = settings.storage.HOST
     _key = settings.storage.KEY
     _key_passphrase = settings.storage.KEY_PASSPHRASE
     _port = settings.storage.PORT
     _user = settings.storage.USER
 
-    def __init__(
-            self,
-            storage_path: str,
-            local_path: str = ''
-    ):
+    async def all_dumps(self) -> list[str]:
         """
-        :param local_path: Local file path. No need for deleting
-        :param storage_path: Server file path
-        """
-        self.storage_path = storage_path
-        self.local_path = local_path
-
-    async def upload(self) -> bool:
-        """
-            Upload file on server by SFTP
-        :return: bool
+            Get paths to all dump files
+        :return: List with paths
         """
         # Create SSH session
         async with asyncssh.connect(
@@ -42,87 +29,24 @@ class StorageFile(AbstractFile):
                 passphrase=self._key_passphrase,
                 known_hosts=None
         ) as conn:
-            # Create folder for file if not exist
-            await conn.run(f'mkdir -p {os.path.dirname(self.storage_path)}')
+            result = []
+            server_folders = await conn.run(f'ls /root/storage', check=True)
 
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
-                        await sftp.put(
-                            localpaths=self.local_path,
-                            remotepath=self.storage_path
-                        )
-                        return True
+            # Skan every folder of server
+            for server_folder in server_folders.stdout.strip().split('\n'):
+                project_folders = await conn.run(f'ls /root/storage/{server_folder}', check=True)
 
-                    except Exception as e:
-                        logging.exception('SFTP upload exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
+                # Skan every folder of project
+                for project_folder in project_folders.stdout.strip().split('\n'):
+                    files = await conn.run(
+                        f'ls /root/storage/{server_folder}/{project_folder}',
+                        check=True
+                    )
 
-                return False
+                    # Add file paths to result
+                    result += [
+                        f'/root/storage/{server_folder}/{project_folder}/{file}'
+                        for file in files.stdout.strip().split('\n')
+                    ]
 
-    async def download(self) -> bool:
-        """
-            Download file from server by SFTP
-        :return: bool
-        """
-        # Create SSH session
-        async with asyncssh.connect(
-                host=self._host,
-                port=self._port,
-                username=self._user,
-                client_keys=[self._key],
-                known_hosts=None,
-                passphrase=self._key_passphrase
-        ) as conn:
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
-                        await sftp.get(
-                            localpath=self.local_path,
-                            remotepaths=self.storage_path
-                        )
-                        return True
-
-                    except Exception as e:
-                        logging.exception('SFTP download exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
-
-                return False
-
-    async def delete(self) -> bool:
-        """
-            Delete file from server by SFTP
-        :return: bool
-        """
-        # Create SSH session
-        async with asyncssh.connect(
-                host=self._host,
-                port=self._port,
-                username=self._user,
-                client_keys=[self._key],
-                known_hosts=None,
-                passphrase=self._key_passphrase
-        ) as conn:
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
-                        await sftp.remove(path=self.storage_path)
-                        return True
-
-                    except Exception as e:
-                        logging.exception('SFTP delete exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
-
-                return False
+            return result

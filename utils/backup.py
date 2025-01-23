@@ -7,7 +7,8 @@ from typing import Literal
 from core.logger import logger
 from integrations.docker import Docker
 from integrations.ipconfig import get_my_ip
-from integrations.storage import StorageFile
+from integrations.file import StorageFile
+from utils.storage import delete_old_dumps
 
 
 async def dbs_dump(containers: list[str], db: Literal["postgres", "mongo"]):
@@ -56,11 +57,14 @@ async def upload_dump(file_path: str):
         os.remove(file_path)
 
 
-async def main() -> None:
+async def backup() -> None:
     """
         Start backup of dbs
     :return:
     """
+    # Delete old backups
+    await delete_old_dumps()
+
     # Get Containers with dbs
     docker = Docker()
     containers = await docker.db_containers()
@@ -110,7 +114,3 @@ async def main() -> None:
 
     logger.info("All backups done")
     sys.exit(0)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
