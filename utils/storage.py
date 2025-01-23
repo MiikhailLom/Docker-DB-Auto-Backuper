@@ -17,15 +17,19 @@ async def delete_old_dumps(age: int = 30):
     logger.info('On storage server %d dumps.', len(file_paths))
 
     for file_path in file_paths:
-        # Math created at date
-        date = os.path.split(file_path)[-1].replace('.dump', '')
-        file_created_at = datetime.strptime(date, '%d-%m-%Y_%H-%M')
+        try:
+            # Math created at date
+            date = os.path.split(file_path)[-1].replace('.dump', '')
+            file_created_at = datetime.strptime(date, '%d-%m-%Y_%H-%M')
 
-        # Skip if file younger then age
-        if not datetime.now() - file_created_at >= timedelta(days=age):
-           continue
+            # Skip if file younger then age
+            if not datetime.now() - file_created_at >= timedelta(days=age):
+               continue
 
-        # Delete from storage server
-        logger.info('Deleting from storage. File %s', file_path)
-        storage_file = StorageFile(storage_path=file_path)
-        await storage_file.delete()
+            # Delete from storage server
+            logger.info('Deleting from storage. File %s', file_path)
+            storage_file = StorageFile(storage_path=file_path)
+            await storage_file.delete()
+
+        except Exception as e:
+            logger.exception('Error delete_old_dumps %s: %s', file_path, e)

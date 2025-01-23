@@ -21,10 +21,13 @@ async def dbs_dump(containers: list[str], db: Literal["postgres", "mongo"]):
 
     # Dump every db container
     for container_id in containers:
-        await docker.dump_db(
-            container_id,
-            db=db
-        )
+        try:
+            await docker.dump_db(
+                container_id,
+                db=db
+            )
+        except Exception as e:
+            logger.exception(f"Error occurred while dumping db: %s. Error: %s", container_id, e)
 
 
 async def upload_dump(file_path: str):
@@ -62,6 +65,8 @@ async def backup() -> None:
         Start backup of dbs
     :return:
     """
+    logger.info('=== Running backup ===')
+
     # Delete old backups
     await delete_old_dumps()
 

@@ -14,6 +14,8 @@ async def restore(project: str, dump: str) -> None:
     :param dump: The name of the dump file to restore
     :return:
     """
+    logger.info('=== Running restore ===')
+
     # Get ip address of your server
     my_ip = await get_my_ip()
 

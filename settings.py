@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 class StorageConfig(BaseSettings):
     HOST: str
     KEY: str
-    PORT: int
-    USER: str
+    PORT: int | None = 22
+    USER: str | None = 'root'
     KEY_PASSPHRASE: str | None = ''
 
     class Config:
@@ -23,9 +23,19 @@ class DockerConfig(BaseSettings):
         extra = 'ignore'
 
 
+class SchedulerConfig(BaseSettings):
+    DAYS: int
+
+    class Config:
+        env_prefix = 'SCHEDULER_'
+        env_file = '.env'
+        extra = 'ignore'
+
+
 class Settings:
     storage = StorageConfig()
     docker = DockerConfig()
+    scheduler = SchedulerConfig()
 
 
 settings = Settings()

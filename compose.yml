@@ -3,6 +3,18 @@ services:
     container_name: backuper
     build:
       context: .
+      dockerfile: main.dockerfile
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/backuper
+
+  backuper_scheduler:
+    container_name: backuper_scheduler
+    build:
+      context: .
+      dockerfile: scheduler.dockerfile
     env_file:
       - .env
     volumes:
