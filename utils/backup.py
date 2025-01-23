@@ -100,7 +100,7 @@ async def backup() -> None:
 
     # Get list of local dumps
     directory = 'data/buffer'
-    file_paths = [os.path.join(directory, file) for file in os.listdir(directory)]
+    file_paths = [os.path.join(directory, file) for file in os.listdir(directory) if '.dump' in file]
 
     # Send dumps to storage-server
     upload_tasks = []
