@@ -1,0 +1,11 @@
+services:
+  backuper:
+    container_name: backuper
+    privileged: true
+    network_mode: "host"
+    build:
+      context: .
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/data/docker.sock
