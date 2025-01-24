@@ -35,9 +35,6 @@ async def restore(project: str, dump: str) -> None:
     docker = Docker()
     container = await docker.container_by_project_name(project)
 
-    # Backup before restore
-    await docker.dump_db(container.id)
-
     # Restore
     await docker.restore_db(
         container_id=container.id,
