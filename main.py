@@ -1,9 +1,12 @@
 import argparse
 import asyncio
+import os
 import sys
 
 from core.logger import logger
+from integrations.storage import Storage
 from utils.backup import backup
+from utils.info import info
 from utils.restore import restore
 
 
@@ -18,7 +21,7 @@ async def main() -> None:
         '-a',
         '--action',
         type=str,
-        help='restore or backup',
+        help='restore, backup, info',
         required=True
     )
     parser.add_argument(
@@ -49,9 +52,16 @@ async def main() -> None:
     elif args.action == 'backup':
         await backup()
 
+    elif args.action == 'info':
+        if not args.project:
+            logger.error('Select project with --project')
+            sys.exit(1)
+
+        await info(args.project)
+
     # If another argument
     else:
-        logger.error('Select action (backup, restore) with --action')
+        logger.error('Use --help')
         sys.exit(1)
 
 

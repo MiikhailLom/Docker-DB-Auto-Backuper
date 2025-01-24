@@ -1,7 +1,7 @@
 # Docker dbs Backuper
 
 ## What the app can do:
-* This application makes backups of all containerized databases (postgres, mongo) from the server where it is running and saves them to a remote storage server.
+* This application makes auto backups of all containerized databases (postgres, mongo) from the server where it is running and saves them to a remote storage server.
 
 * You can also restore databases from backups on the storage server with this project!
 
@@ -65,6 +65,8 @@ STORAGE_PORT=Ssh port on storage server. By defoult 22
 STORAGE_USER=Server user. By Defualt root
 
 DOCKER_HOST=Url for Docker API. Use "tcp://localhost:2375" (Don't forget setting it in Docker App). For Wondwos and "unix:///var/run/docker.sock" for Linux.
+
+SCHEDULER_DAYS=How many times a day should backups be made
 ```
 
 ### Step 5: Create Key to access the server
@@ -103,20 +105,12 @@ For restore project db:
 docker compose run --rm backuper python main.py -a restore -d name_pg_dump_in_storage -p name_of_project_workdir
 ```
 
-## Auto-execute.
-
-Open Crontab 
+For To find out the names of the project dams:
 ```
-crontab -e
-```
-and add
-
-```
-0 2 * * * docker compose -f /root/backuper/compose.yml run --rm --remove-orphans backuper python main.py -a backup
+docker compose run --rm backuper python main.py -a info -p name_of_project_workdir
 ```
 
-Save it.
-
-**Backups will be performed every day at 2 am.**
-
-
+If you have any problems:
+```
+docker compose run --rm backuper python main.py -h
+```

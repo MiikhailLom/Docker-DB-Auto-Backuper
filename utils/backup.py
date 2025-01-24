@@ -22,10 +22,7 @@ async def dbs_dump(containers: list[str], db: Literal["postgres", "mongo"]):
     # Dump every db container
     for container_id in containers:
         try:
-            await docker.dump_db(
-                container_id,
-                db=db
-            )
+            await docker.dump_db(container_id)
         except Exception as e:
             logger.exception(f"Error occurred while dumping db: %s. Error: %s", container_id, e)
 
@@ -74,29 +71,14 @@ async def backup() -> None:
     docker = Docker()
     containers = await docker.db_containers()
 
-    logger.info('Postgres Containers length: %d', len(containers.postgres))
-    logger.info('Mongo Containers length: %d', len(containers.mongo))
+    logger.info('DB Containers length: %d', len(containers))
 
+    # Dump dbs
     dbs_dump_task = []
-
-    # Dump postgres dbs
-    for container_id in containers.postgres:
+    for container_id in containers:
         dbs_dump_task.append(
             asyncio.create_task(
-                docker.dump_db(
-                    container_id=container_id,
-                    db='postgres'
-                )
-            )
-        )
-    # Dump mongo dbs
-    for container_id in containers.mongo:
-        dbs_dump_task.append(
-            asyncio.create_task(
-                docker.dump_db(
-                    container_id=container_id,
-                    db='mongo'
-                )
+                docker.dump_db(container_id)
             )
         )
 
