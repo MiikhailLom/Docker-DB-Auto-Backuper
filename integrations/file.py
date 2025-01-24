@@ -32,96 +32,96 @@ class StorageFile(AbstractFile):
             Upload file on server by SFTP
         :return: bool
         """
-        # Create SSH session
-        async with asyncssh.connect(
-                host=self._host,
-                port=self._port,
-                username=self._user,
-                client_keys=[self._key],
-                passphrase=self._key_passphrase,
-                known_hosts=None
-        ) as conn:
-            # Create folder for file if not exist
-            await conn.run(f'mkdir -p {os.path.dirname(self.storage_path)}')
+        # Try to put file until it works out
+        attempts = 0
+        while attempts <= 5:
+            try:
+                # Create SSH session
+                async with asyncssh.connect(
+                        host=self._host,
+                        port=self._port,
+                        username=self._user,
+                        client_keys=[self._key],
+                        passphrase=self._key_passphrase,
+                        known_hosts=None
+                ) as conn:
+                    # Create folder for file if not exist
+                    await conn.run(f'mkdir -p {os.path.dirname(self.storage_path)}')
 
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
+                    # Start SFTP session
+                    async with conn.start_sftp_client() as sftp:
                         await sftp.put(
                             localpaths=self.local_path,
                             remotepath=self.storage_path
                         )
                         return True
 
-                    except Exception as e:
-                        logging.exception('SFTP upload exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
-
-                return False
+            except Exception as e:
+                logging.exception('SFTP upload exception: %s', e)
+                attempts += 1
+                await asyncio.sleep(5)
 
     async def download(self) -> bool:
         """
             Download file from server by SFTP
         :return: bool
         """
-        # Create SSH session
-        async with asyncssh.connect(
-                host=self._host,
-                port=self._port,
-                username=self._user,
-                client_keys=[self._key],
-                known_hosts=None,
-                passphrase=self._key_passphrase
-        ) as conn:
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
-                        await sftp.get(
-                            localpath=self.local_path,
-                            remotepaths=self.storage_path
-                        )
-                        return True
+        # Try to put file until it works out
+        attempts = 0
+        while attempts <= 5:
+            try:
+                # Create SSH session
+                async with asyncssh.connect(
+                        host=self._host,
+                        port=self._port,
+                        username=self._user,
+                        client_keys=[self._key],
+                        known_hosts=None,
+                        passphrase=self._key_passphrase
+                ) as conn:
+                    # Start SFTP session
+                    async with conn.start_sftp_client() as sftp:
+                        # Try to put file until it works out
+                        attempts = 0
+                        while attempts <= 5:
+                            await sftp.get(
+                                localpath=self.local_path,
+                                remotepaths=self.storage_path
+                            )
+                            return True
 
-                    except Exception as e:
-                        logging.exception('SFTP download exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
-
-                return False
+            except Exception as e:
+                logging.exception('SFTP upload exception: %s', e)
+                attempts += 1
+                await asyncio.sleep(5)
 
     async def delete(self) -> bool:
         """
             Delete file from server by SFTP
         :return: bool
         """
-        # Create SSH session
-        async with asyncssh.connect(
-                host=self._host,
-                port=self._port,
-                username=self._user,
-                client_keys=[self._key],
-                known_hosts=None,
-                passphrase=self._key_passphrase
-        ) as conn:
-            # Start SFTP session
-            async with conn.start_sftp_client() as sftp:
-                # Try to put file until it works out
-                attempts = 0
-                while attempts <= 5:
-                    try:
-                        await sftp.remove(path=self.storage_path)
-                        return True
+        # Try to put file until it works out
+        attempts = 0
+        while attempts <= 5:
+            try:
+                # Create SSH session
+                async with asyncssh.connect(
+                        host=self._host,
+                        port=self._port,
+                        username=self._user,
+                        client_keys=[self._key],
+                        known_hosts=None,
+                        passphrase=self._key_passphrase
+                ) as conn:
+                    # Start SFTP session
+                    async with conn.start_sftp_client() as sftp:
+                        # Try to put file until it works out
+                        attempts = 0
+                        while attempts <= 5:
+                            await sftp.remove(path=self.storage_path)
+                            return True
 
-                    except Exception as e:
-                        logging.exception('SFTP delete exception: %s', e)
-                        attempts += 1
-                        await asyncio.sleep(1)
-
-                return False
+            except Exception as e:
+                logging.exception('SFTP delete exception: %s', e)
+                attempts += 1
+                await asyncio.sleep(5)
