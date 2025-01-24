@@ -57,9 +57,11 @@ class StorageFile(AbstractFile):
                         return True
 
             except Exception as e:
-                logging.exception('SFTP upload exception: %s', e)
+                logging.error('SFTP upload exception: %s', e)
                 attempts += 1
                 await asyncio.sleep(5)
+
+        logging.error('SFTP CANT UPLOAD FILE: %s', self.local_path)
 
     async def download(self) -> bool:
         """
@@ -91,9 +93,11 @@ class StorageFile(AbstractFile):
                             return True
 
             except Exception as e:
-                logging.exception('SFTP upload exception: %s', e)
+                logging.error('SFTP upload exception: %s', e)
                 attempts += 1
                 await asyncio.sleep(5)
+
+        logging.error('SFTP CANT UPLOAD FILE: %s', self.local_path)
 
     async def delete(self) -> bool:
         """
@@ -122,6 +126,8 @@ class StorageFile(AbstractFile):
                             return True
 
             except Exception as e:
-                logging.exception('SFTP delete exception: %s', e)
+                logging.error('SFTP delete exception: %s', e)
                 attempts += 1
                 await asyncio.sleep(5)
+
+        logging.error('SFTP CANT UPLOAD FILE: %s', self.local_path)
